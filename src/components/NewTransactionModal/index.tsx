@@ -1,10 +1,13 @@
 import { FormEvent, useState } from 'react';
 import Modal from 'react-modal';
-import { Content,TransitionTypeContainer,RadioBox } from './styles';
+import { useTransactions } from '../../hooks/useTransactions';
+
 import closeImg from '../../assets/fechar.svg'
 import incomeImg from '../../assets/entradas.svg'
 import outcomeImg from '../../assets/saidas.svg'
-import { api } from '../../services/api';
+
+import { Content,TransitionTypeContainer,RadioBox } from './styles';
+
 
 interface NewTransactionModalProps  {
     isOpen:boolean,
@@ -13,24 +16,33 @@ interface NewTransactionModalProps  {
 
 export function NewTransactionModal( {isOpen,onRequestClose } :NewTransactionModalProps ){
     
+    const {createTransanction} = useTransactions()
+
     const [type, setType] =  useState('deposit');
     const [title, setTitle] =  useState('');
-    const [value, setValue] =  useState(0);
+    const [amout, setAmout] =  useState(0);
     const [category, setCategory] =  useState('');
 
-    
+   
 
     
-    function handleCreateNewTransiction(event: FormEvent){
+    async function handleCreateNewTransiction(event: FormEvent){
         event.preventDefault()
 
-        const data = {
-            title, 
-            value, 
-            type, 
-            category
-        }
-        api.post('/transactions', data)
+        await createTransanction({
+            title,
+            amout, 
+            category,
+            type
+        })
+
+        setType('deposit')
+        setTitle('')
+        setAmout(0)
+        setCategory('')
+        onRequestClose();
+
+
     }
     
     return(
@@ -58,8 +70,8 @@ export function NewTransactionModal( {isOpen,onRequestClose } :NewTransactionMod
             <input 
                 type="number" 
                 placeholder='Valor'
-                value={value}
-                onChange={event => {setValue(Number(event.target.value))}}
+                value={amout}
+                onChange={event => {setAmout(Number(event.target.value))}}
             />
 
             <TransitionTypeContainer>
